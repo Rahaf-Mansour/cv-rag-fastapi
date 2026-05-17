@@ -19,7 +19,7 @@ from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from rag import get_sources, init_rag, run_query, run_query_stream
+from rag import get_sources_payload, init_rag, run_query, run_query_stream
 
 
 # ── Request / Response models ────────────────────────────────────────────────
@@ -33,6 +33,8 @@ class Source(BaseModel):
     doc_name: str
     score: float
     snippet: str
+    snippet_truncated: bool = False
+    rank: Optional[int] = None
 
 
 class AskResponse(BaseModel):
@@ -45,6 +47,8 @@ class AskResponse(BaseModel):
 class SourcesResponse(BaseModel):
     question: str
     sources: List[Source]
+    is_ranking: bool = False
+    top_n: Optional[int] = None
 
 
 # ── Lifespan: runs init_rag() ONCE on startup ────────────────────────────────
@@ -82,7 +86,10 @@ def root():
     index = STATIC_DIR / "index.html"
     if not index.exists():
         return {"message": "UI not found. Visit /docs for the API."}
-    return FileResponse(index)
+    return FileResponse(
+        index,
+        headers={"Cache-Control": "no-cache, no-store, must-revalidate"},
+    )
 
 
 # ── Routes ───────────────────────────────────────────────────────────────────
@@ -115,9 +122,12 @@ def ask(request: AskRequest):
 def sources(request: AskRequest):
     """Return the retrieved CV chunks for a question — no LLM call."""
     try:
+        payload = get_sources_payload(request.question)
         return SourcesResponse(
             question=request.question,
-            sources=get_sources(request.question),
+            sources=payload["sources"],
+            is_ranking=payload.get("is_ranking", False),
+            top_n=payload.get("top_n"),
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

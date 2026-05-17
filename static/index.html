@@ -42,22 +42,182 @@
       color: #e5e7eb;
       border: 1px solid rgba(255,255,255,0.06);
     }
-    .source-chip {
-      background: rgba(99,102,241,0.12);
-      border: 1px solid rgba(99,102,241,0.35);
+    .source-card {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+    .source-card:hover {
+      border-color: rgba(99,102,241,0.45);
+      background: rgba(30, 41, 59, 0.78);
+    }
+    .source-card[open] {
+      border-color: rgba(99,102,241,0.55);
+      background: rgba(30, 41, 59, 0.85);
+    }
+    .source-card summary {
+      list-style: none;
+    }
+    .source-card summary::-webkit-details-marker {
+      display: none;
+    }
+    .source-card .chevron {
+      transition: transform 0.2s ease;
+    }
+    .source-card[open] .chevron {
+      transform: rotate(90deg);
+    }
+    .rank-badge {
+      background: linear-gradient(135deg, rgba(99,102,241,0.25), rgba(168,85,247,0.25));
+      border: 1px solid rgba(99,102,241,0.5);
       color: #c7d2fe;
     }
-    .source-chip:hover {
-      background: rgba(99,102,241,0.22);
+    .score-pill {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #6ee7b7;
     }
-    .typing-dot {
-      animation: blink 1.2s infinite;
+    .snippet-text {
+      white-space: pre-wrap;
+      line-height: 1.6;
+      color: #d1d5db;
     }
-    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes blink {
-      0%, 80%, 100% { opacity: 0.2; }
-      40% { opacity: 1; }
+    .snippet-clamp {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .empty-snippet {
+      color: #9ca3af;
+      font-style: italic;
+    }
+    .thinking-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 220px;
+    }
+    .thinking-spinner {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid rgba(99, 102, 241, 0.25);
+      border-top-color: #a5b4fc;
+      animation: spin 0.75s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .thinking-bar {
+      height: 3px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+    .thinking-bar-fill {
+      display: block;
+      height: 100%;
+      width: 35%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #6366f1, #a855f7, #6366f1);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      0% { transform: translateX(-120%); background-position: 0% 50%; }
+      100% { transform: translateX(320%); background-position: 100% 50%; }
+    }
+    .sources-skeleton {
+      border: 1px dashed rgba(99, 102, 241, 0.35);
+      border-radius: 14px;
+      padding: 14px 16px;
+      background: rgba(30, 41, 59, 0.35);
+    }
+    .skeleton-line {
+      height: 10px;
+      border-radius: 6px;
+      background: linear-gradient(
+        90deg,
+        rgba(255,255,255,0.06) 0%,
+        rgba(255,255,255,0.14) 50%,
+        rgba(255,255,255,0.06) 100%
+      );
+      background-size: 200% 100%;
+      animation: shimmer 1.4s ease-in-out infinite;
+    }
+    .send-btn-loading svg {
+      display: none;
+    }
+    .send-btn-loading::after {
+      content: '';
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      animation: spin 0.7s linear infinite;
+    }
+    .response-panel {
+      background: rgba(17, 24, 39, 0.55);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #a5b4fc;
+    }
+    .section-hint {
+      font-size: 12px;
+      color: #9ca3af;
+      line-height: 1.5;
+    }
+    .analysis-block {
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .evidence-callout {
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.28);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: #d1d5db;
+      line-height: 1.55;
+    }
+    .evidence-callout strong {
+      color: #e0e7ff;
+      font-weight: 600;
+    }
+    .evidence-subheading {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin: 12px 0 8px;
+    }
+    .source-card-featured {
+      border-color: rgba(99, 102, 241, 0.45);
+      background: rgba(30, 41, 59, 0.75);
+    }
+    .source-card-other {
+      opacity: 0.92;
+    }
+    .in-summary-badge {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #6ee7b7;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
     }
     .scroll-area::-webkit-scrollbar { width: 8px; }
     .scroll-area::-webkit-scrollbar-thumb {
@@ -66,6 +226,8 @@
     }
     pre, code { font-family: 'JetBrains Mono', monospace; }
     .answer-text { white-space: pre-wrap; line-height: 1.65; }
+    .answer-text strong { font-weight: 600; color: #f9fafb; }
+    .answer-text em { font-style: italic; color: #e5e7eb; }
     .answer-text code {
       background: rgba(0,0,0,0.35);
       padding: 1px 6px;
@@ -231,6 +393,108 @@
         .replace(/>/g, '&gt;');
     }
 
+    /** Escape HTML, then render common LLM markdown (bold, italic, code). */
+    function renderAnswer(text) {
+      if (!text) return '';
+      let s = escapeHtml(text);
+      // Streaming sometimes glues digits to the next word (e.g. "3candidates").
+      s = s.replace(/(\d)([A-Za-z])/g, '$1 $2');
+      s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      s = s.replace(/__(.+?)__/g, '<strong>$1</strong>');
+      s = s.replace(/(?<!\*)\*([^*\n]+?)\*(?!\*)/g, '<em>$1</em>');
+      s = s.replace(/`([^`\n]+?)`/g, '<code>$1</code>');
+      return s;
+    }
+
+    function setAnswer(el, text) {
+      stopThinkingTimer();
+      delete el.dataset.thinking;
+      el.innerHTML = renderAnswer(text);
+    }
+
+    const LOADING_STAGES = {
+      search: {
+        main: 'Searching your CV library…',
+        sub: 'Looking through every CV to find the best matches',
+      },
+      generate: {
+        main: 'Writing your answer…',
+        sub: 'Comparing candidates for your question',
+      },
+      wait: {
+        main: 'Still working on it…',
+        sub: 'Large queries can take a little longer',
+      },
+    };
+
+    let thinkingTimer = null;
+
+    function stopThinkingTimer() {
+      if (thinkingTimer) {
+        clearInterval(thinkingTimer);
+        thinkingTimer = null;
+      }
+    }
+
+    function setThinking(el, stage = 'search') {
+      const s = LOADING_STAGES[stage] || LOADING_STAGES.search;
+      el.dataset.thinking = 'true';
+      el.innerHTML = `
+        <div class="thinking-panel" role="status" aria-live="polite">
+          <div class="flex items-start gap-3">
+            <div class="thinking-spinner mt-0.5" aria-hidden="true"></div>
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-gray-100" data-role="thinking-main">${escapeHtml(s.main)}</p>
+              <p class="text-xs text-gray-400 mt-1" data-role="thinking-sub">${escapeHtml(s.sub)}</p>
+            </div>
+          </div>
+          <div class="thinking-bar" aria-hidden="true">
+            <span class="thinking-bar-fill"></span>
+          </div>
+        </div>`;
+    }
+
+    function updateThinking(el, stage) {
+      if (el.dataset.thinking !== 'true') return;
+      const s = LOADING_STAGES[stage] || LOADING_STAGES.search;
+      const main = el.querySelector('[data-role="thinking-main"]');
+      const sub = el.querySelector('[data-role="thinking-sub"]');
+      if (main) main.textContent = s.main;
+      if (sub) sub.textContent = s.sub;
+    }
+
+    function startThinkingProgress(el) {
+      stopThinkingTimer();
+      let step = 0;
+      thinkingTimer = setInterval(() => {
+        if (el.dataset.thinking !== 'true') {
+          stopThinkingTimer();
+          return;
+        }
+        step += 1;
+        if (step === 4) updateThinking(el, 'generate');
+        else if (step >= 8) updateThinking(el, 'wait');
+      }, 2500);
+    }
+
+    function showSourcesLoading(container) {
+      container.classList.remove('hidden');
+      container.innerHTML = `
+        <div class="sources-skeleton space-y-3" role="status" aria-live="polite">
+          <p class="text-xs uppercase tracking-wider text-indigo-300/90">Finding matching CVs…</p>
+          <div class="skeleton-line w-3/4"></div>
+          <div class="skeleton-line w-full"></div>
+          <div class="skeleton-line w-5/6"></div>
+        </div>`;
+    }
+
+    function setFormBusy(busy) {
+      $q.disabled = busy;
+      $send.disabled = busy || !$q.value.trim();
+      $send.classList.toggle('send-btn-loading', busy);
+      $send.setAttribute('aria-busy', busy ? 'true' : 'false');
+    }
+
     function appendUser(text) {
       const wrap = document.createElement('div');
       wrap.className = 'flex justify-end';
@@ -242,52 +506,190 @@
       $chat.scrollTop = $chat.scrollHeight;
     }
 
-    function appendBot() {
+    function appendBot(showEvidence) {
       const wrap = document.createElement('div');
-      wrap.className = 'flex flex-col items-start gap-2';
-      wrap.innerHTML = `
-        <div class="bubble-bot max-w-[92%] px-4 py-3 rounded-2xl rounded-bl-md shadow">
-          <div class="answer-text text-sm">
-            <span class="typing inline-flex gap-1 items-center">
-              <span class="typing-dot w-1.5 h-1.5 rounded-full bg-gray-400"></span>
-              <span class="typing-dot w-1.5 h-1.5 rounded-full bg-gray-400"></span>
-              <span class="typing-dot w-1.5 h-1.5 rounded-full bg-gray-400"></span>
-            </span>
-          </div>
-        </div>
-        <div class="sources hidden flex flex-wrap gap-2 max-w-full"></div>`;
+      wrap.className = 'flex flex-col items-start w-full max-w-[92%]';
+      if (showEvidence) {
+        wrap.innerHTML = `
+          <div class="response-panel w-full shadow-lg">
+            <div class="analysis-block px-4 py-3">
+              <p class="section-label mb-2">Assistant analysis</p>
+              <div class="answer-text text-sm text-gray-200"></div>
+            </div>
+            <div class="evidence-block px-4 py-3 space-y-3">
+              <div>
+                <p class="section-label" data-role="evidence-title">CVs behind this answer</p>
+                <div class="evidence-callout mt-2" data-role="evidence-callout"></div>
+              </div>
+              <div class="sources space-y-2"></div>
+            </div>
+          </div>`;
+      } else {
+        wrap.innerHTML = `
+          <div class="bubble-bot w-full px-4 py-3 rounded-2xl rounded-bl-md shadow">
+            <div class="answer-text text-sm"></div>
+          </div>`;
+      }
       $chat.appendChild(wrap);
       $chat.scrollTop = $chat.scrollHeight;
+      const bubble = wrap.querySelector('.answer-text');
+      setThinking(bubble, 'search');
+      startThinkingProgress(bubble);
       return {
-        bubble: wrap.querySelector('.answer-text'),
+        bubble,
         sources: wrap.querySelector('.sources'),
+        evidenceTitle: wrap.querySelector('[data-role="evidence-title"]'),
+        evidenceCallout: wrap.querySelector('[data-role="evidence-callout"]'),
       };
     }
 
-    function renderSources(container, sources) {
-      if (!sources || !sources.length) return;
-      container.classList.remove('hidden');
-      container.innerHTML = sources
-        .map((s, i) => {
-          const displayName = s.student_name && s.student_name.trim()
-            ? s.student_name
-            : s.doc_name;
-          const hasName = !!(s.student_name && s.student_name.trim());
-          const subtitle = hasName
-            ? `<span class="opacity-50 text-[10px]">${escapeHtml(s.doc_name)}</span>`
-            : '';
-          return `
-            <details class="source-chip rounded-lg text-xs px-3 py-2 cursor-pointer">
-              <summary class="font-medium select-none flex items-center gap-2">
-                <span class="opacity-60">#${i + 1}</span>
-                <span>${escapeHtml(displayName)}</span>
-                ${subtitle}
-                <span class="ml-auto opacity-70">score ${(+s.score).toFixed(3)}</span>
-              </summary>
-              <p class="mt-2 text-gray-300 whitespace-pre-wrap leading-relaxed">${escapeHtml(s.snippet)}…</p>
-            </details>`;
-        })
-        .join('');
+    function buildEvidenceCopy(sources, meta = {}) {
+      const count = sources.length;
+      const isRanking = !!meta.is_ranking;
+      const topN = meta.top_n || 3;
+
+      if (isRanking) {
+        const extra = count - topN;
+        let callout = 'We searched <strong>your entire CV library</strong> and shortlisted '
+          + `<strong>${count}</strong> candidate${count === 1 ? '' : 's'} who best fit your question.`;
+        if (extra > 0) {
+          callout += ` The analysis above recommends the <strong>top ${topN}</strong>; `
+            + `the other <strong>${extra}</strong> below are strong alternates if you want to compare.`;
+        } else {
+          callout += ` The analysis above covers ${count === topN ? 'these' : 'the'} `
+            + `<strong>${Math.min(count, topN)}</strong> candidate${topN === 1 ? '' : 's'}.`;
+        }
+        callout += ' Tap a name to read the CV excerpt the assistant used.';
+        return {
+          title: 'CVs behind this answer',
+          callout,
+          isRanking: true,
+          topN,
+        };
+      }
+      return {
+        title: `CVs behind this answer · ${count}`,
+        callout: 'We searched <strong>your full CV library</strong> and pulled the excerpts below '
+          + 'to write the analysis. Tap a name to read the CV text.',
+        isRanking: false,
+        topN: null,
+      };
+    }
+
+    function renderSourceCard(s, options = {}) {
+      const { open = false, featured = false, inSummary = false } = options;
+      const hasName = !!(s.student_name && s.student_name.trim());
+      const displayName = hasName ? s.student_name : s.doc_name;
+      const fileLine = hasName
+        ? `<span class="text-[11px] text-gray-400 font-mono">${escapeHtml(s.doc_name)}</span>`
+        : '';
+      const summaryBadge = inSummary
+        ? '<span class="in-summary-badge shrink-0">In the summary above</span>'
+        : '';
+
+      const rawSnippet = (s.snippet || '').trim();
+      const truncated = !!s.snippet_truncated;
+      const snippetBody = rawSnippet
+        ? `
+          <div class="snippet-text snippet-clamp text-sm" data-role="clamp">${escapeHtml(rawSnippet)}${truncated ? '…' : ''}</div>
+          <div class="snippet-text text-sm hidden" data-role="full">${escapeHtml(rawSnippet)}${truncated ? '…' : ''}</div>
+          <button type="button"
+                  class="toggle-snippet text-[11px] text-indigo-300 hover:text-indigo-200 mt-2 select-none">
+            Show more
+          </button>`
+        : '<div class="empty-snippet text-sm">No excerpt available for this CV.</div>';
+
+      let cardClass = 'source-card px-4 py-3';
+      if (featured) cardClass = 'source-card source-card-featured px-4 py-3';
+      else if (inSummary === false && !featured) cardClass = 'source-card source-card-other px-4 py-3';
+
+      return `
+        <details class="${cardClass}" ${open ? 'open' : ''}>
+          <summary class="flex items-center gap-3 cursor-pointer select-none">
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-semibold text-white truncate">${escapeHtml(displayName)}</div>
+              <div class="flex items-center gap-2 mt-0.5">${fileLine}</div>
+            </div>
+            ${summaryBadge}
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 class="chevron w-4 h-4 text-gray-400 shrink-0">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+            </svg>
+          </summary>
+          <div class="mt-3 pt-3 border-t border-white/5">${snippetBody}</div>
+        </details>`;
+    }
+
+    function renderSources(container, sources, meta = {}) {
+      if (!container) return;
+
+      const copy = buildEvidenceCopy(sources || [], meta);
+      if (meta.evidenceTitle) meta.evidenceTitle.textContent = copy.title;
+      if (meta.evidenceCallout) meta.evidenceCallout.innerHTML = copy.callout;
+
+      if (!sources || !sources.length) {
+        container.innerHTML =
+          '<p class="text-sm text-gray-400 italic">No matching CV excerpts were found for this question.</p>';
+        return;
+      }
+
+      const isRanking = copy.isRanking && copy.topN;
+      const topN = copy.topN || 3;
+      let html = '';
+
+      if (isRanking && sources.length > topN) {
+        const featured = sources.slice(0, topN);
+        const others = sources.slice(topN);
+        html += '<p class="evidence-subheading">Featured in the analysis above</p>';
+        html += '<div class="space-y-2">';
+        html += featured.map((s, i) => renderSourceCard(s, {
+          open: i === 0,
+          featured: true,
+          inSummary: true,
+        })).join('');
+        html += '</div>';
+        html += `<p class="evidence-subheading">Also worth a look (${others.length} more)</p>`;
+        html += '<div class="space-y-2">';
+        html += others.map((s) => renderSourceCard(s, { open: false })).join('');
+        html += '</div>';
+      } else if (isRanking) {
+        html += '<p class="evidence-subheading">Featured in the analysis above</p>';
+        html += '<div class="space-y-2">';
+        html += sources.map((s, i) => renderSourceCard(s, {
+          open: i === 0,
+          featured: true,
+          inSummary: true,
+        })).join('');
+        html += '</div>';
+      } else {
+        html += '<div class="space-y-2">';
+        html += sources.map((s, i) => renderSourceCard(s, { open: i === 0 })).join('');
+        html += '</div>';
+      }
+
+      container.innerHTML = html;
+
+      // Wire up "Show more / less" toggles for clamped snippets.
+      container.querySelectorAll('.toggle-snippet').forEach((btn) => {
+        btn.addEventListener('click', (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          const card = btn.closest('.source-card');
+          const clamp = card.querySelector('[data-role="clamp"]');
+          const full = card.querySelector('[data-role="full"]');
+          const expanded = full && !full.classList.contains('hidden');
+          if (expanded) {
+            full.classList.add('hidden');
+            clamp.classList.remove('hidden');
+            btn.textContent = 'Show more';
+          } else {
+            clamp.classList.add('hidden');
+            full.classList.remove('hidden');
+            btn.textContent = 'Show less';
+          }
+        });
+      });
     }
 
     // ── status pill ──────────────────────────────────────────────────────
@@ -318,14 +720,24 @@
       }
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
-      ctx.bubble.innerHTML = '';
       let answer = '';
+      let hasContent = false;
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
         answer += decoder.decode(value, { stream: true });
-        ctx.bubble.textContent = answer;
-        $chat.scrollTop = $chat.scrollHeight;
+        if (!hasContent && answer.trim()) {
+          hasContent = true;
+          stopThinkingTimer();
+        }
+        if (hasContent) {
+          setAnswer(ctx.bubble, answer);
+          $chat.scrollTop = $chat.scrollHeight;
+        }
+      }
+      stopThinkingTimer();
+      if (!hasContent) {
+        setAnswer(ctx.bubble, answer.trim() || '(empty answer)');
       }
       return answer;
     }
@@ -343,17 +755,25 @@
       return res.json();
     }
 
-    async function fetchSources(question) {
+    async function fetchSourcesPayload(question) {
       try {
         const r = await fetch(API + '/sources', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ question, show_context: false }),
         });
-        if (!r.ok) return [];
+        if (!r.ok) {
+          return { sources: [], is_ranking: false, top_n: null };
+        }
         const data = await r.json();
-        return data.sources || [];
-      } catch { return []; }
+        return {
+          sources: data.sources || [],
+          is_ranking: !!data.is_ranking,
+          top_n: data.top_n || null,
+        };
+      } catch {
+        return { sources: [], is_ranking: false, top_n: null };
+      }
     }
 
     $form.addEventListener('submit', async (e) => {
@@ -363,29 +783,55 @@
 
       $q.value = '';
       $q.style.height = 'auto';
-      $send.disabled = true;
+      setFormBusy(true);
 
       appendUser(question);
-      const ctx = appendBot();
+      const wantSources = $showSources.checked;
+      const ctx = appendBot(wantSources);
 
       const useStream = $stream.checked;
-      const wantSources = $showSources.checked;
+      if (wantSources && ctx.sources) {
+        showSourcesLoading(ctx.sources);
+      }
 
       try {
         if (useStream) {
-          // Streaming gives us tokens but not sources — fetch them in parallel.
-          const sourcesPromise = wantSources ? fetchSources(question) : Promise.resolve([]);
+          const sourcesPromise = wantSources
+            ? fetchSourcesPayload(question)
+            : Promise.resolve({ sources: [], is_ranking: false, top_n: null });
           await askStreaming(question, ctx);
-          const sources = await sourcesPromise;
-          renderSources(ctx.sources, sources);
+          const payload = await sourcesPromise;
+          renderSources(ctx.sources, payload.sources, {
+            is_ranking: payload.is_ranking,
+            top_n: payload.top_n,
+            evidenceTitle: ctx.evidenceTitle,
+            evidenceCallout: ctx.evidenceCallout,
+          });
         } else {
           const data = await askJson(question, wantSources);
-          ctx.bubble.textContent = data.answer || '(empty answer)';
-          renderSources(ctx.sources, data.sources || []);
+          stopThinkingTimer();
+          setAnswer(ctx.bubble, data.answer || '(empty answer)');
+          if (wantSources && ctx.sources) {
+            const payload = await fetchSourcesPayload(question);
+            renderSources(ctx.sources, payload.sources, {
+              is_ranking: payload.is_ranking,
+              top_n: payload.top_n,
+              evidenceTitle: ctx.evidenceTitle,
+              evidenceCallout: ctx.evidenceCallout,
+            });
+          }
         }
       } catch (err) {
+        stopThinkingTimer();
+        delete ctx.bubble.dataset.thinking;
         ctx.bubble.innerHTML =
           `<span class="text-red-300">⚠️ ${escapeHtml(err.message)}</span>`;
+        if (ctx.sources) {
+          ctx.sources.innerHTML =
+            `<p class="text-sm text-red-300">Could not load CV evidence.</p>`;
+        }
+      } finally {
+        setFormBusy(false);
       }
     });
   </script>

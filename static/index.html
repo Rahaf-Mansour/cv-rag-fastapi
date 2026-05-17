@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CV RAG — Recruiter Assistant</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --brand: #6366f1;
+      --brand-dark: #4f46e5;
+    }
+    html, body {
+      font-family: 'Inter', system-ui, sans-serif;
+      height: 100%;
+    }
+    body {
+      background:
+        radial-gradient(1200px 600px at 10% -10%, rgba(99,102,241,0.18), transparent 60%),
+        radial-gradient(1000px 500px at 110% 110%, rgba(168,85,247,0.18), transparent 60%),
+        linear-gradient(180deg, #0b1020 0%, #0a0f1f 100%);
+      color: #e5e7eb;
+    }
+    .glass {
+      background: rgba(17, 24, 39, 0.6);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .bubble-user {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+    }
+    .bubble-bot {
+      background: rgba(31, 41, 55, 0.85);
+      color: #e5e7eb;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .source-chip {
+      background: rgba(99,102,241,0.12);
+      border: 1px solid rgba(99,102,241,0.35);
+      color: #c7d2fe;
+    }
+    .source-chip:hover {
+      background: rgba(99,102,241,0.22);
+    }
+    .typing-dot {
+      animation: blink 1.2s infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes blink {
+      0%, 80%, 100% { opacity: 0.2; }
+      40% { opacity: 1; }
+    }
+    .scroll-area::-webkit-scrollbar { width: 8px; }
+    .scroll-area::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+    }
+    pre, code { font-family: 'JetBrains Mono', monospace; }
+    .answer-text { white-space: pre-wrap; line-height: 1.65; }
+    .answer-text code {
+      background: rgba(0,0,0,0.35);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #a5b4fc, #f0abfc);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .pulse-ring {
+      box-shadow: 0 0 0 0 rgba(99,102,241,0.7);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(99,102,241,0.6); }
+      70% { box-shadow: 0 0 0 12px rgba(99,102,241,0); }
+      100% { box-shadow: 0 0 0 0 rgba(99,102,241,0); }
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+  <div class="max-w-4xl mx-auto px-4 py-6 flex flex-col h-screen">
+
+    <!-- Header -->
+    <header class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center pulse-ring"
+             style="background: linear-gradient(135deg,#6366f1,#a855f7);">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+               stroke="white" class="w-6 h-6" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold gradient-text">CV RAG</h1>
+          <p class="text-xs text-gray-400">AI Recruiter Assistant</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 text-xs text-gray-400">
+        <span id="status-pill" class="flex items-center gap-2 px-3 py-1.5 rounded-full glass">
+          <span id="status-dot" class="w-2 h-2 rounded-full bg-yellow-400"></span>
+          <span id="status-text">connecting…</span>
+        </span>
+        <a href="/docs" target="_blank"
+           class="px-3 py-1.5 rounded-full glass hover:text-white transition">API docs</a>
+      </div>
+    </header>
+
+    <!-- Chat area -->
+    <main id="chat" class="flex-1 overflow-y-auto scroll-area space-y-4 pr-1">
+      <!-- Welcome card -->
+      <div class="glass rounded-2xl p-6">
+        <h2 class="text-lg font-semibold mb-2">Welcome 👋</h2>
+        <p class="text-sm text-gray-300 mb-4">
+          Ask questions about the CV pool indexed in Pinecone. The assistant
+          retrieves the most relevant CV chunks and answers using only that context,
+          so every claim is grounded in a real CV.
+        </p>
+        <div class="grid sm:grid-cols-2 gap-2">
+          <button class="suggestion text-left text-sm px-3 py-2 rounded-lg glass hover:border-indigo-400 transition">
+            Which candidates have Python and machine learning experience?
+          </button>
+          <button class="suggestion text-left text-sm px-3 py-2 rounded-lg glass hover:border-indigo-400 transition">
+            I need a senior backend engineer with AWS or GCP experience.
+          </button>
+          <button class="suggestion text-left text-sm px-3 py-2 rounded-lg glass hover:border-indigo-400 transition">
+            Rank the top 3 candidates for a data engineering role.
+          </button>
+          <button class="suggestion text-left text-sm px-3 py-2 rounded-lg glass hover:border-indigo-400 transition">
+            Which candidates hold a computer science degree?
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Composer -->
+    <footer class="mt-4">
+      <div class="glass rounded-2xl p-3">
+        <form id="ask-form" class="flex items-end gap-2">
+          <textarea
+            id="question"
+            rows="1"
+            placeholder="Ask anything about the CVs…  (Shift+Enter for new line)"
+            class="flex-1 resize-none bg-transparent outline-none px-3 py-2 text-sm placeholder-gray-500 max-h-40"
+          ></textarea>
+          <button
+            id="send-btn"
+            type="submit"
+            class="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-white transition disabled:opacity-50"
+            style="background: linear-gradient(135deg,#6366f1,#8b5cf6);"
+            disabled
+            aria-label="Send"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                 fill="currentColor" class="w-5 h-5">
+              <path d="M3.478 2.404a.75.75 0 00-.926.941l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.404z" />
+            </svg>
+          </button>
+        </form>
+
+        <div class="flex items-center justify-between px-2 pt-2 text-xs text-gray-400">
+          <label class="flex items-center gap-2 select-none cursor-pointer">
+            <input id="show-sources" type="checkbox" class="accent-indigo-500" checked />
+            Show retrieved CV sources
+          </label>
+          <label class="flex items-center gap-2 select-none cursor-pointer">
+            <input id="stream-mode" type="checkbox" class="accent-indigo-500" checked />
+            Stream answer
+          </label>
+        </div>
+      </div>
+      <p class="text-center text-[11px] text-gray-500 mt-2">
+        Powered by FastAPI · Pinecone · LangChain · OpenRouter
+      </p>
+    </footer>
+  </div>
+
+  <script>
+    const API = ''; // same origin
+    const $chat = document.getElementById('chat');
+    const $form = document.getElementById('ask-form');
+    const $q = document.getElementById('question');
+    const $send = document.getElementById('send-btn');
+    const $showSources = document.getElementById('show-sources');
+    const $stream = document.getElementById('stream-mode');
+    const $statusDot = document.getElementById('status-dot');
+    const $statusText = document.getElementById('status-text');
+
+    // ── auto-grow textarea ───────────────────────────────────────────────
+    $q.addEventListener('input', () => {
+      $q.style.height = 'auto';
+      $q.style.height = Math.min($q.scrollHeight, 160) + 'px';
+      $send.disabled = !$q.value.trim();
+    });
+
+    // Submit on Enter, newline on Shift+Enter
+    $q.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if ($q.value.trim()) $form.requestSubmit();
+      }
+    });
+
+    // suggestion buttons
+    document.querySelectorAll('.suggestion').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        $q.value = btn.textContent.trim();
+        $q.dispatchEvent(new Event('input'));
+        $q.focus();
+      });
+    });
+
+    // ── helpers ──────────────────────────────────────────────────────────
+    function escapeHtml(s) {
+      return s
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function appendUser(text) {
+      const wrap = document.createElement('div');
+      wrap.className = 'flex justify-end';
+      wrap.innerHTML = `
+        <div class="bubble-user max-w-[85%] px-4 py-2.5 rounded-2xl rounded-br-md shadow-lg">
+          <p class="text-sm whitespace-pre-wrap">${escapeHtml(text)}</p>
+        </div>`;
+      $chat.appendChild(wrap);
+      $chat.scrollTop = $chat.scrollHeight;
+    }
+
+    function appendBot() {
+      const wrap = document.createElement('div');
+      wrap.className = 'flex flex-col items-start gap-2';
+      wrap.innerHTML = `
+        <div class="bubble-bot max-w-[92%] px-4 py-3 rounded-2xl rounded-bl-md shadow">
+          <div class="answer-text text-sm">
+            <span class="typing inline-flex gap-1 items-center">
+              <span class="typing-dot w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+              <span class="typing-dot w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+              <span class="typing-dot w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+            </span>
+          </div>
+        </div>
+        <div class="sources hidden flex flex-wrap gap-2 max-w-full"></div>`;
+      $chat.appendChild(wrap);
+      $chat.scrollTop = $chat.scrollHeight;
+      return {
+        bubble: wrap.querySelector('.answer-text'),
+        sources: wrap.querySelector('.sources'),
+      };
+    }
+
+    function renderSources(container, sources) {
+      if (!sources || !sources.length) return;
+      container.classList.remove('hidden');
+      container.innerHTML = sources
+        .map((s, i) => {
+          const displayName = s.student_name && s.student_name.trim()
+            ? s.student_name
+            : s.doc_name;
+          const hasName = !!(s.student_name && s.student_name.trim());
+          const subtitle = hasName
+            ? `<span class="opacity-50 text-[10px]">${escapeHtml(s.doc_name)}</span>`
+            : '';
+          return `
+            <details class="source-chip rounded-lg text-xs px-3 py-2 cursor-pointer">
+              <summary class="font-medium select-none flex items-center gap-2">
+                <span class="opacity-60">#${i + 1}</span>
+                <span>${escapeHtml(displayName)}</span>
+                ${subtitle}
+                <span class="ml-auto opacity-70">score ${(+s.score).toFixed(3)}</span>
+              </summary>
+              <p class="mt-2 text-gray-300 whitespace-pre-wrap leading-relaxed">${escapeHtml(s.snippet)}…</p>
+            </details>`;
+        })
+        .join('');
+    }
+
+    // ── status pill ──────────────────────────────────────────────────────
+    async function ping() {
+      try {
+        const r = await fetch(API + '/health');
+        if (r.ok) {
+          $statusDot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+          $statusText.textContent = 'online';
+        } else throw new Error();
+      } catch {
+        $statusDot.className = 'w-2 h-2 rounded-full bg-red-400';
+        $statusText.textContent = 'offline';
+      }
+    }
+    ping();
+    setInterval(ping, 30000);
+
+    // ── ask flow ─────────────────────────────────────────────────────────
+    async function askStreaming(question, ctx) {
+      const res = await fetch(API + '/ask-stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, show_context: false }),
+      });
+      if (!res.ok || !res.body) {
+        throw new Error('Stream failed: HTTP ' + res.status);
+      }
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      ctx.bubble.innerHTML = '';
+      let answer = '';
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        answer += decoder.decode(value, { stream: true });
+        ctx.bubble.textContent = answer;
+        $chat.scrollTop = $chat.scrollHeight;
+      }
+      return answer;
+    }
+
+    async function askJson(question, withContext) {
+      const res = await fetch(API + '/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, show_context: withContext }),
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error('HTTP ' + res.status + ': ' + err);
+      }
+      return res.json();
+    }
+
+    async function fetchSources(question) {
+      try {
+        const r = await fetch(API + '/sources', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question, show_context: false }),
+        });
+        if (!r.ok) return [];
+        const data = await r.json();
+        return data.sources || [];
+      } catch { return []; }
+    }
+
+    $form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const question = $q.value.trim();
+      if (!question) return;
+
+      $q.value = '';
+      $q.style.height = 'auto';
+      $send.disabled = true;
+
+      appendUser(question);
+      const ctx = appendBot();
+
+      const useStream = $stream.checked;
+      const wantSources = $showSources.checked;
+
+      try {
+        if (useStream) {
+          // Streaming gives us tokens but not sources — fetch them in parallel.
+          const sourcesPromise = wantSources ? fetchSources(question) : Promise.resolve([]);
+          await askStreaming(question, ctx);
+          const sources = await sourcesPromise;
+          renderSources(ctx.sources, sources);
+        } else {
+          const data = await askJson(question, wantSources);
+          ctx.bubble.textContent = data.answer || '(empty answer)';
+          renderSources(ctx.sources, data.sources || []);
+        }
+      } catch (err) {
+        ctx.bubble.innerHTML =
+          `<span class="text-red-300">⚠️ ${escapeHtml(err.message)}</span>`;
+      }
+    });
+  </script>
+</body>
+</html>

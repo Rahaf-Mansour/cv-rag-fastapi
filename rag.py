@@ -481,13 +481,31 @@ def run_query(question: str, show_context: bool = False) -> dict:
     return result
 
 
+def _friendly_llm_error(exc: Exception) -> str:
+    """Turn provider errors into short messages for the chat UI."""
+    err = str(exc)
+    name = type(exc).__name__
+    if "429" in err or "RateLimit" in name or "rate limit" in err.lower():
+        return (
+            "The AI provider rate limit was reached (OpenRouter free tier). "
+            "Wait for the daily reset, add credits at https://openrouter.ai, "
+            "or change OPENROUTER_MODEL in your .env to a model with quota left."
+        )
+    if "401" in err or "authentication" in err.lower() or "invalid" in err.lower():
+        return "OpenRouter rejected the API key. Check OPENROUTER_API_KEY in your .env file."
+    return f"Could not generate an answer: {err[:300]}"
+
+
 def run_query_stream(question: str):
     """Generator yielding answer tokens one at a time (for streaming endpoint)."""
     if _rag_chain is None:
         raise RuntimeError("RAG chain not initialised. Call init_rag() first.")
 
-    for chunk in _rag_chain.stream(question):
-        yield chunk
+    try:
+        for chunk in _rag_chain.stream(question):
+            yield chunk
+    except Exception as e:
+        yield _friendly_llm_error(e)
 
 
 def get_sources_payload(question: str) -> dict:

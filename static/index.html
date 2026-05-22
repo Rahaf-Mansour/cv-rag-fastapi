@@ -538,9 +538,24 @@
       return {
         bubble,
         sources: wrap.querySelector('.sources'),
+        evidenceBlock: wrap.querySelector('.evidence-block'),
         evidenceTitle: wrap.querySelector('[data-role="evidence-title"]'),
         evidenceCallout: wrap.querySelector('[data-role="evidence-callout"]'),
       };
+    }
+
+    function hideEvidenceBlock(ctx) {
+      if (ctx.evidenceBlock) ctx.evidenceBlock.classList.add('hidden');
+    }
+
+    function isLlmErrorAnswer(text) {
+      const t = (text || '').trim();
+      return (
+        /rate limit was reached/i.test(t) ||
+        /Could not generate an answer/i.test(t) ||
+        /OpenRouter rejected the API key/i.test(t) ||
+        /^⚠️/u.test(t)
+      );
     }
 
     function buildEvidenceCopy(sources, meta = {}) {
@@ -708,15 +723,60 @@
     ping();
     setInterval(ping, 30000);
 
+    function friendlyFetchError(err) {
+      const msg = (err && err.message) ? err.message : String(err);
+      if (
+        msg === 'Failed to fetch' ||
+        msg === 'NetworkError when attempting to fetch resource.' ||
+        /network error/i.test(msg)
+      ) {
+        return (
+          'Lost connection to the server while streaming the answer. '
+          + 'Check the uvicorn terminal—often this is an OpenRouter rate limit (429) or the server restarting.'
+        );
+      }
+      if (/429|rate limit/i.test(msg)) {
+        return (
+          'OpenRouter rate limit reached. Wait for the daily reset, add credits, '
+          + 'or change OPENROUTER_MODEL in .env.'
+        );
+      }
+      return msg;
+    }
+
+    async function renderEvidence(question, ctx) {
+      if (!ctx.sources) return;
+      const payload = await fetchSourcesPayload(question);
+      renderSources(ctx.sources, payload.sources, {
+        is_ranking: payload.is_ranking,
+        top_n: payload.top_n,
+        evidenceTitle: ctx.evidenceTitle,
+        evidenceCallout: ctx.evidenceCallout,
+      });
+    }
+
     // ── ask flow ─────────────────────────────────────────────────────────
     async function askStreaming(question, ctx) {
-      const res = await fetch(API + '/ask-stream', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, show_context: false }),
-      });
-      if (!res.ok || !res.body) {
-        throw new Error('Stream failed: HTTP ' + res.status);
+      let res;
+      try {
+        res = await fetch(API + '/ask-stream', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question, show_context: false }),
+        });
+      } catch (err) {
+        throw new Error(friendlyFetchError(err));
+      }
+      if (!res.ok) {
+        const errText = await res.text().catch(() => '');
+        throw new Error(
+          res.status === 429
+            ? 'OpenRouter rate limit (HTTP 429). Check your OpenRouter quota or switch models in .env.'
+            : `Stream failed: HTTP ${res.status}${errText ? ' — ' + errText.slice(0, 200) : ''}`
+        );
+      }
+      if (!res.body) {
+        throw new Error('Stream failed: empty response body');
       }
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -796,40 +856,49 @@
 
       try {
         if (useStream) {
-          const sourcesPromise = wantSources
-            ? fetchSourcesPayload(question)
-            : Promise.resolve({ sources: [], is_ranking: false, top_n: null });
-          await askStreaming(question, ctx);
-          const payload = await sourcesPromise;
-          renderSources(ctx.sources, payload.sources, {
-            is_ranking: payload.is_ranking,
-            top_n: payload.top_n,
-            evidenceTitle: ctx.evidenceTitle,
-            evidenceCallout: ctx.evidenceCallout,
-          });
+          let answer = '';
+          try {
+            answer = await askStreaming(question, ctx);
+          } catch (err) {
+            stopThinkingTimer();
+            delete ctx.bubble.dataset.thinking;
+            ctx.bubble.innerHTML =
+              `<span class="text-red-300">⚠️ ${escapeHtml(friendlyFetchError(err))}</span>`;
+            hideEvidenceBlock(ctx);
+          }
+          if (wantSources) {
+            if (answer.trim() && !isLlmErrorAnswer(answer)) {
+              await renderEvidence(question, ctx);
+            } else {
+              hideEvidenceBlock(ctx);
+            }
+          }
         } else {
           const data = await askJson(question, wantSources);
           stopThinkingTimer();
-          setAnswer(ctx.bubble, data.answer || '(empty answer)');
-          if (wantSources && ctx.sources) {
-            const payload = await fetchSourcesPayload(question);
-            renderSources(ctx.sources, payload.sources, {
-              is_ranking: payload.is_ranking,
-              top_n: payload.top_n,
-              evidenceTitle: ctx.evidenceTitle,
-              evidenceCallout: ctx.evidenceCallout,
-            });
+          const answer = data.answer || '(empty answer)';
+          setAnswer(ctx.bubble, answer);
+          if (wantSources) {
+            if (isLlmErrorAnswer(answer)) {
+              hideEvidenceBlock(ctx);
+            } else if (data.sources && data.sources.length) {
+              renderSources(ctx.sources, data.sources, {
+                is_ranking: false,
+                top_n: null,
+                evidenceTitle: ctx.evidenceTitle,
+                evidenceCallout: ctx.evidenceCallout,
+              });
+            } else {
+              await renderEvidence(question, ctx);
+            }
           }
         }
       } catch (err) {
         stopThinkingTimer();
         delete ctx.bubble.dataset.thinking;
         ctx.bubble.innerHTML =
-          `<span class="text-red-300">⚠️ ${escapeHtml(err.message)}</span>`;
-        if (ctx.sources) {
-          ctx.sources.innerHTML =
-            `<p class="text-sm text-red-300">Could not load CV evidence.</p>`;
-        }
+          `<span class="text-red-300">⚠️ ${escapeHtml(friendlyFetchError(err))}</span>`;
+        hideEvidenceBlock(ctx);
       } finally {
         setFormBusy(false);
       }
